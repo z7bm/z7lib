@@ -51,8 +51,8 @@
 //        cb: clear bits
 //        sb: set bits
 //
-INLINE void     wrpa(uintptr_t addr, const uint32_t data)        { *( reinterpret_cast<volatile uint32_t*>(addr) ) =  data;  }
-INLINE uint32_t rdpa (uintptr_t addr)                            { return *( reinterpret_cast<volatile uint32_t*>(addr) );   }
+INLINE void     wrpa(uintptr_t addr, const uint32_t data) { *( reinterpret_cast<volatile uint32_t*>(addr) ) =  data;  }
+INLINE uint32_t rdpa (uintptr_t addr)                     { return *( reinterpret_cast<volatile uint32_t*>(addr) );   }
 INLINE void     cbpa(uintptr_t addr, const uint32_t mask) { *( reinterpret_cast<volatile uint32_t*>(addr) ) &= ~mask; }
 INLINE void     sbpa(uintptr_t addr, const uint32_t mask) { *( reinterpret_cast<volatile uint32_t*>(addr) ) |=  mask; }
 //------------------------------------------------------------------------------
