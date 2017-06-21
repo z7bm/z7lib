@@ -198,9 +198,7 @@ void TQSpi::program_page(const uint32_t addr, const uint32_t *data)
 
     cs_off();
     flush_rx_fifo();
-    wrpa(GPIO_MASK_DATA_0_LSW_REG, (~(1ul << 13) << 16) | (1ul << 13) );  // JE1 on
     while( wip() ) { }
-    wrpa(GPIO_MASK_DATA_0_LSW_REG, (~(1ul << 13) << 16) | 0 );            // JE1 off
 }
 //------------------------------------------------------------------------------
 void TQSpi::write(const uint32_t addr, const uint32_t *data, const uint32_t count)
