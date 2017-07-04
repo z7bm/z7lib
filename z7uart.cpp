@@ -73,8 +73,6 @@ void TUart::init()
 //---------------------------------------------------------------------------
 void uart1_isr_handler()
 {
-    wrpa(GPIO_MASK_DATA_0_LSW_REG, (~(1ul << 13) << 16) | (1ul << 13) );  // JE1 on
-    wrpa(GPIO_MASK_DATA_0_LSW_REG, (~(1ul << 13) << 16) | 0 );            // JE1 off
     if( Uart1.tx_empty() )
     {
         uint32_t Count = Uart1_TxBuf.get_count();
@@ -90,7 +88,6 @@ void uart1_isr_handler()
         
         Uart1.clear_tx_empty_flag();
     }
-    
 }
 //---------------------------------------------------------------------------
 void TUart::send(const char c)
