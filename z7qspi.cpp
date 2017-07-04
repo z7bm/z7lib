@@ -212,6 +212,9 @@ void TQSpi::write(const uint32_t addr, const uint32_t *data, const uint32_t coun
 //------------------------------------------------------------------------------
 void TQSpi::read(const uint32_t addr, uint32_t * const dst, uint32_t count)
 {
+    if(!count)
+        return;
+    
     cs_on();
 
     // issue command/address
