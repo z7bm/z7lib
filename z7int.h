@@ -108,8 +108,8 @@ enum TGicConfigField
 
 enum TGicCpuID
 {
-    GIC_CPU0  = 0,
-    GIC_CPU1  = 1
+    GIC_CPU0  = 1ul << 0,
+    GIC_CPU1  = 1ul << 1
 };
 //------------------------------------------------------------------------------
 INLINE void enable_interrupts()  { asm volatile ("    cpsie i \n"); }
