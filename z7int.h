@@ -76,11 +76,9 @@ INLINE void gic_set_config(const uint32_t id, uint32_t cfg)
 //------------------------------------------------------------------------------
 INLINE void gic_set_priority(const uint32_t id, uint32_t pr)
 {
-    const uint32_t  REG_INDEX    = id/4;
-    const uint32_t  BIT_MASK     = pr << (id%4)*8;
-    const uintptr_t ICDIPR_ADDR = GIC_ICDIPR0 + REG_INDEX*4;
-
-    sbpa(ICDIPR_ADDR, BIT_MASK);
+    uint8_t *p = reinterpret_cast<uint8_t *>(GIC_ICDIPR0 + id);
+    
+    *p = pr << 3;
 }
 //------------------------------------------------------------------------------
 INLINE void gic_set_pending(const uint32_t id)
