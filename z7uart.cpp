@@ -1,16 +1,13 @@
-//******************************************************************************
-//*
-//*      Project:   Any
-//*
-//*      File:      UART device 
-//*
-//*      Version 1.0
-//*
-//*      Copyright (c) 2009-2017, Harry E. Zhurov
-//*
-//*      $Revision$
-//*      $Date::             $
-//*
+//------------------------------------------------------------------------------
+//
+//    Project:   Any
+//
+//    File:      UART device
+//
+//    Version 2.0
+//
+//    Copyright (c) 2009-2024, Harry E. Zhurov
+//
 //------------------------------------------------------------------------------
 
 
@@ -20,15 +17,12 @@
 #include <z7uart.h>
 #include <z7int.h>
 
-    
-const uint32_t UART1_TX_BUF_SIZE = 2048;
-extern usr::ring_buffer<char, UART1_TX_BUF_SIZE, uint32_t> Uart1_TxBuf;
-extern class TUart Uart1;
+extern class Uart uart1;
                                        
-//---------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void uart1_isr_handler();
 
-//---------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
 //    Baud rate. Input clock 100 MHz, UART baud rate 115200.
 // 
@@ -42,7 +36,7 @@ void uart1_isr_handler();
 // 
 //    BAUD_RATE   = 100e6/(1*124*7) = 115207
 //    
-void TUart::init()
+void Uart::init()
 {
     // reset UART
     const uint32_t RST_MASK = reinterpret_cast<uintptr_t>(Regs) == UART0_ADDR ? UART0_RST_MASK : UART1_RST_MASK;
@@ -70,64 +64,51 @@ void TUart::init()
     
 
 }
-//---------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 void uart1_isr_handler()
 {
-    if( Uart1.tx_empty() )
+    if( uart1.tx_empty() )
     {
-        uint32_t Count = Uart1_TxBuf.get_count();
+        uint32_t Count = uart1.tx_buf.get_count();
         Count = Count > 64 ? 64 : Count;
         if( Count )
         {
             for(uint32_t i = 0; i < Count; ++i)
             {
-                Uart1.push_tx(Uart1_TxBuf.pop());
+                uart1.push_tx(uart1.tx_buf.pop());
             }
         }
-        else Uart1.disable_tx_empty_int();
+        else
+        {
+            uart1.disable_tx_empty_int();
+            uart1.set_busy(false);
+        }
         
-        Uart1.clear_tx_empty_flag();
+        uart1.clear_tx_empty_flag();
+
     }
 }
-//---------------------------------------------------------------------------
-void TUart::send(const char c)
+//------------------------------------------------------------------------------
+void Uart::send(const char c)
 {
-    Uart1_TxBuf.push(c); 
+    busy = true;
+    tx_buf.push(c);
     enable_tx_empty_int();
-//    MMR16(UART_THR)   = c;
-//    MMR16(UART_IER)  |= ETBEI;
 }
-//---------------------------------------------------------------------------
-void TUart::send(const char* s)
+//------------------------------------------------------------------------------
+void Uart::send(const char* s)
 {
+    busy = true;
     uint32_t i = 0;
     while(s[i])
     {
-        Uart1_TxBuf.push(s[i++]);
+        tx_buf.push(s[i++]);
     }
     enable_tx_empty_int();
     if( !(Regs->CHANNEL_STS & UART_CHNL_STS_TFUL_MASK) )
     {
-        push_tx(Uart1_TxBuf.pop());
+        push_tx(tx_buf.pop());
     }
-
-//
-////    MMR16(UART_THR)   = TxBuf.pop();
-//    MMR16(UART_IER)  |= ETBEI;
-//
 }
-//---------------------------------------------------------------------------
-//void UART::send(const uint8_t *data, const uint16_t count)
-//{
-//    for(uint16_t i = 0; i < count; i++)
-//    {
-//        if( TxBuf.get_count() )
-//        {
-//            TxBuf.push(data[i]);
-//        }
-//    }
-//
-//    MMR16(UART_IER)  |= ETBEI;
-//}
-//---------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
