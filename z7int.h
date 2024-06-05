@@ -113,6 +113,8 @@ enum TGicCpuID
 INLINE void enable_interrupts()  { __asm__ __volatile__ ("    cpsie i \n"); }
 INLINE void disable_interrupts() { __asm__ __volatile__ ("    cpsid i \n"); }
 //------------------------------------------------------------------------------
+using status_reg_t = uint32_t;
+
 //------------------------------------------------------------------------------
 INLINE status_reg_t get_interrupt_state()
 {
@@ -126,13 +128,14 @@ INLINE void set_interrupt_state(status_reg_t sr)
     __asm__ __volatile__ ( " msr cpsr_c, %0 \n" : : "r"(sr) );
 }
 //------------------------------------------------------------------------------
-class TCritSect
+class CritSect
 {
-    uint32_t CPSR;
-    
 public:
-    TCritSect() : CPSR( get_int_state() ) { }
-    ~TCritSect() { set_int_state(CPSR); }
+    INLINE  CritSect() : sr(get_interrupt_state()) { disable_interrupts(); }
+    INLINE ~CritSect() { set_interrupt_state(sr); }
+
+private:
+    status_reg_t sr;
 };
 //------------------------------------------------------------------------------
 //
