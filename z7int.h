@@ -110,30 +110,20 @@ enum TGicCpuID
     GIC_CPU1  = 1ul << 1
 };
 //------------------------------------------------------------------------------
-INLINE void enable_interrupts()  { asm volatile ("    cpsie i \n"); }
-INLINE void disable_interrupts() { asm volatile ("    cpsid i \n"); }
+INLINE void enable_interrupts()  { __asm__ __volatile__ ("    cpsie i \n"); }
+INLINE void disable_interrupts() { __asm__ __volatile__ ("    cpsid i \n"); }
 //------------------------------------------------------------------------------
-INLINE uint32_t get_int_state()
+//------------------------------------------------------------------------------
+INLINE status_reg_t get_interrupt_state()
 {
-    uint32_t cpsr;
-    asm volatile 
-    (
-        "    mrs %0, cpsr \n"
-        "    cpsid i;     \n"
-        : "=r"(cpsr)
-        : 
-    );
-    return cpsr;
+    status_reg_t sr;
+    __asm__ __volatile__ ("mrs %0, cpsr\n" : "=r"(sr) );
+    return sr;
 }
 //------------------------------------------------------------------------------
-INLINE void set_int_state(uint32_t state)
+INLINE void set_interrupt_state(status_reg_t sr)
 {
-    asm volatile
-    (
-        "    msr cpsr_c, %0 \n"
-        : 
-        : "r"(state)
-    );
+    __asm__ __volatile__ ( " msr cpsr_c, %0 \n" : : "r"(sr) );
 }
 //------------------------------------------------------------------------------
 class TCritSect
