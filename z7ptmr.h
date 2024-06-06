@@ -16,7 +16,6 @@
 #include <stdint.h>
 #include <ps7mmrs.h>
 #include <z7common.h>
-#include "usrlib.h"
 
 
 struct PrivateTimer
@@ -33,9 +32,9 @@ struct PrivateTimer
     //
     //  The following function accept clock frequency in MHz and time inteval in ms
 
-    template<typename T> constexpr static void set_reload_value(T f, T t)  // f: MHz, t: ms
+    template<typename T> constexpr static void set_reload_value(T f, T t)  // f: MHz, t: us
     {
-        wrpa(PTMR_LOAD_REG, f*t*1000 - 1);
+        wrpa(PTMR_LOAD_REG, f*t - 1);
     }
 
     static void start()
