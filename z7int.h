@@ -113,6 +113,24 @@ enum TGicCpuID
 INLINE void enable_interrupts()  { __asm__ __volatile__ ("    cpsie i \n"); }
 INLINE void disable_interrupts() { __asm__ __volatile__ ("    cpsid i \n"); }
 //------------------------------------------------------------------------------
+INLINE void enable_nested_interrupts()
+{
+    __asm__ __volatile__ ("stmfd   sp!, {lr}");     \
+    __asm__ __volatile__ ("mrs     lr, spsr");      \
+    __asm__ __volatile__ ("stmfd   sp!, {lr}");     \
+    __asm__ __volatile__ ("msr     cpsr_c, #0x1F"); \
+    __asm__ __volatile__ ("stmfd   sp!, {lr}");
+}
+//------------------------------------------------------------------------------
+INLINE void disable_nested_interrupts()
+{
+    __asm__ __volatile__ ("ldmfd   sp!, {lr}");     \
+    __asm__ __volatile__ ("msr     cpsr_c, #0x92"); \
+    __asm__ __volatile__ ("ldmfd   sp!, {lr}");     \
+    __asm__ __volatile__ ("msr     spsr_cxsf, lr"); \
+    __asm__ __volatile__ ("ldmfd   sp!, {lr}");
+}
+//------------------------------------------------------------------------------
 using status_reg_t = uint32_t;
 
 //------------------------------------------------------------------------------
