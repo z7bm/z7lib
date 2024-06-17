@@ -310,9 +310,9 @@ const uint32_t PS7_MAX_IRQ_ID        = PS7IRQ_ID_SCU_PARITY;
 //
 //    ISR Handlers
 //
-typedef void (*TISRHandler)();
+typedef void (*isr_ptr_t)();
 
-void ps7_register_isr_handler(TISRHandler ptr, uint32_t id);
+void ps7_register_isr(isr_ptr_t ptr, uint32_t id);
 
 
 //------------------------------------------------------------------------------

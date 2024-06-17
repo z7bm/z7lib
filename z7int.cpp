@@ -34,11 +34,11 @@
 #include <z7int.h>
 
 //------------------------------------------------------------------------------
-TISRHandler PS7Handlers[PS7_MAX_IRQ_ID];
+isr_ptr_t ps7_handlers[PS7_MAX_IRQ_ID];
 //------------------------------------------------------------------------------
-void ps7_register_isr_handler(TISRHandler ptr, uint32_t id)
+void ps7_register_isr(isr_ptr_t ptr, uint32_t id)
 {
-    PS7Handlers[id] = ptr;
+    ps7_handlers[id] = ptr;
 }
 //------------------------------------------------------------------------------
 

@@ -60,7 +60,7 @@ void Uart::init()
     Ctrl |=  (UART_CTRL_RXEN_MASK | UART_CTRL_TXEN_MASK);
     Regs->CTRL = Ctrl;
     
-    ps7_register_isr_handler(&uart1_isr_handler, PS7IRQ_ID_UART1);
+    ps7_register_isr(&uart1_isr_handler, PS7IRQ_ID_UART1);
     
 
 }
