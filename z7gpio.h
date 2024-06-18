@@ -1,17 +1,36 @@
 //------------------------------------------------------------------------------
 //
-//      Project:   Any
-//
-//      File:      GPIO support
+//      Xilinx zynq-7000/arm-none-eabi GPIO Support Header
 //
 //      Version 1.0
 //
-//      Copyright (c) 2024, Harry E. Zhurov
+//      Permission is hereby granted, free of charge, to any person obtaining
+//      a copy of this software and associated documentation files (the
+//      "Software"), to deal in the Software without restriction, including
+//      without limitation the rights to use, copy, modify, merge, publish,
+//      distribute, sublicense, and/or sell copies of the Software, and to
+//      permit persons to whom the Software is furnished to do so, subject to
+//      the following conditions:
+//
+//      The above copyright notice and this permission notice shall be included
+//      in all copies or substantial portions of the Software.
+//
+//      THE SOFTWARE  IS PROVIDED  "AS IS", WITHOUT  WARRANTY OF  ANY KIND,
+//      EXPRESS  OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+//      MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+//      IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+//      CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+//      TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+//      THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+//     Copyright (c) 2017-2024, Zynq-7000 Bare-metal Project
+//     -----------------------------------------------------
+//     Project sources: https://github.com/z7bm
 //
 //------------------------------------------------------------------------------
 
-#ifndef Z7GPIO_H
-#define Z7GPIO_H
+#ifndef PS7GPIO_H
+#define PS7GPIO_H
 
 #include <stdint.h>
 #include <ps7mmrs.h>
@@ -55,6 +74,6 @@ bool pin_is_set(const uint32_t id)
 
 //------------------------------------------------------------------------------
 
-#endif // Z7GPIO_H
+#endif // PS7GPIO_H
 //------------------------------------------------------------------------------
 
