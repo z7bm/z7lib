@@ -35,15 +35,12 @@
 #include <stdint.h>
 #include <ps7mmrs.h>
 #include <z7common.h>
-#include "usrlib.h"
 
 //------------------------------------------------------------------------------
 class Uart
 {
-    friend void uart1_isr_handler();
-
 public:
-    struct TRegs
+    struct Regs
     {
         uint32_t CTRL;               //  32    mixed    0x00000128    UART Control Register
         uint32_t MODE;               //  32    mixed    0x00000000    UART Mode Register
@@ -65,31 +62,29 @@ public:
 
 public:
     Uart(uintptr_t addr)
-           : tx_buf()
-           , Regs( reinterpret_cast<TRegs*>(addr) )
+           : regs( reinterpret_cast<Regs*>(addr) )
            , busy(false)
     { 
     }
     
-    void init();
-    void send(const char  c);
-    void send(const char *s);
     void set_busy(bool x) { busy = x;    }
     bool is_busy() const  { return busy; }
   
-    bool tx_empty() const { return Regs->CHNL_INT_STS & UART_CHNL_INT_STS_TEMPTY_MASK; }
-    void enable_tx_empty_int()  const { Regs->INT_EN  = UART_INT_EN_TEMPTY_MASK; }
-    void disable_tx_empty_int() const { Regs->INT_DIS = UART_INT_DIS_TEMPTY_MASK; }
-    void clear_tx_empty_flag() { Regs->CHNL_INT_STS = UART_CHNL_INT_STS_TEMPTY_MASK; }
-    void push_tx(char c) const { Regs->TX_RX_FIFO = c; }
-      
-private:
+    bool tx_empty()             const { return regs->CHNL_INT_STS & UART_CHNL_INT_STS_TEMPTY_MASK; }
+    void enable_tx_empty_int()  const { regs->INT_EN  = UART_INT_EN_TEMPTY_MASK; }
+    void disable_tx_empty_int() const { regs->INT_DIS = UART_INT_DIS_TEMPTY_MASK; }
+    void clear_tx_empty_flag()        { regs->CHNL_INT_STS = UART_CHNL_INT_STS_TEMPTY_MASK; }
+    void push_tx(char c)        const { regs->TX_RX_FIFO = c; }
+    
+    void enable_rx_empty_int()  const { regs->INT_EN  = UART_INT_EN_TEMPTY_MASK; }
+    void disable_rx_empty_int() const { regs->INT_DIS = UART_INT_DIS_TEMPTY_MASK; }
+
+protected:
     static const uint32_t UART0_RST_MASK = UART_RST_CTRL_UART0_REF_RST_MASK | UART_RST_CTRL_UART0_CPU1X_RST_MASK;
     static const uint32_t UART1_RST_MASK = UART_RST_CTRL_UART1_REF_RST_MASK | UART_RST_CTRL_UART1_CPU1X_RST_MASK;
         
-private:
-    usr::ring_buffer<char, UART_TX_BUF_SIZE, uint16_t> tx_buf;
-    volatile TRegs *Regs;
+protected:
+    volatile Regs  *regs;
     volatile bool   busy;
 };
 //------------------------------------------------------------------------------
