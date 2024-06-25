@@ -76,8 +76,11 @@ public:
     void clear_tx_empty_flag()        { regs->CHNL_INT_STS = UART_CHNL_INT_STS_TEMPTY_MASK; }
     void push_tx(char c)        const { regs->TX_RX_FIFO = c; }
     
-    void enable_rx_empty_int()  const { regs->INT_EN  = UART_INT_EN_TEMPTY_MASK; }
-    void disable_rx_empty_int() const { regs->INT_DIS = UART_INT_DIS_TEMPTY_MASK; }
+    bool rx_trig()              const { return regs->CHNL_INT_STS & UART_CHNL_INT_STS_RTRIG_MASK; }
+    void enable_rx_trig_int()   const { regs->INT_EN  = UART_INT_EN_RTRIG_MASK; }
+    void disable_rx_trig_int()  const { regs->INT_DIS = UART_INT_DIS_RTRIG_MASK; }
+    void reset_rx_trig_int()    const { regs->CHNL_INT_STS = UART_CHNL_INT_STS_RTRIG_MASK; }
+    char pop_rx()               const { return regs->TX_RX_FIFO; }
 
 protected:
     static const uint32_t UART0_RST_MASK = UART_RST_CTRL_UART0_REF_RST_MASK | UART_RST_CTRL_UART0_CPU1X_RST_MASK;
