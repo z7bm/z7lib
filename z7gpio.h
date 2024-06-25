@@ -63,7 +63,7 @@ constexpr void pin_off(const T id)
     wrpa(reg, clear_mask);
 }
 //------------------------------------------------------------------------------
-bool pin_is_set(const uint32_t id)
+inline bool pin_is_set(const uint32_t id)
 {
     return rdpa(GPIO_DATA_0_REG) & (1ul << id);
 }
