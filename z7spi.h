@@ -58,17 +58,24 @@ public:
     };
 
 public:
-    Spi(uintptr_t addr)
+    Spi(const uintptr_t addr)
            : regs( reinterpret_cast<Regs*>(addr) )
            , busy(false)
     { 
+        const uint32_t RST_MASK = addr == SPI0_ADDR ? SPI0_RST_MASK : SPI1_RST_MASK;
+
+        // SPI controller reset and clocks
+        slcr_unlock();
+        sbpa(SPI_RST_CTRL_REG, RST_MASK);
+        cbpa(SPI_RST_CTRL_REG, RST_MASK);
+        slcr_lock();
     }
     
     void set_busy(bool x) { busy = x;    }
     bool is_busy() const  { return busy; }
   
-    void push_tx(char c)        const { regs->TX_DATA_REG = c; }
-    //char pop_rx()               const { return regs->TX_RX_FIFO; }
+    void push_tx(uint8_t c) const { regs->TX_DATA_REG = c; }
+    uint8_t pop_rx()        const { return regs->RX_DATA_REG; }
 
     void man_start()
     {
