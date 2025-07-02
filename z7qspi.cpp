@@ -201,10 +201,10 @@ void TQSpi::program_page(const uint32_t addr, const uint32_t *data)
 //------------------------------------------------------------------------------
 void TQSpi::write(const uint32_t addr, const uint32_t *data, const uint32_t count)
 {
-    const uint32_t CHUNKS = count/PAGE_SIZE;
+    const uint32_t CHUNKS = count > PAGE_SIZE ? count/PAGE_SIZE + 1 : 1;
     for(uint32_t i = 0; i < CHUNKS; ++i)
     {
-        program_page(addr + i*PAGE_SIZE, data + i*PAGE_SIZE);
+        program_page(addr + i*PAGE_SIZE*sizeof(uint32_t), data + i*PAGE_SIZE);
     }
 }
 //------------------------------------------------------------------------------
