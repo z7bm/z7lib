@@ -203,7 +203,8 @@ void Qspi::program_page(const uint32_t addr, const uint32_t *data)
 //------------------------------------------------------------------------------
 void Qspi::write(const uint32_t addr, const uint32_t *data, const uint32_t count)
 {
-    const uint32_t CHUNKS = count > PAGE_SIZE ? count/PAGE_SIZE + 1 : 1;
+    const uint32_t CHUNKS = count/PAGE_SIZE + (count%PAGE_SIZE ? 1 : 0);
+
     for(uint32_t i = 0; i < CHUNKS; ++i)
     {
         program_page(addr + i*PAGE_SIZE*sizeof(uint32_t), data + i*PAGE_SIZE);
