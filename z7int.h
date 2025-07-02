@@ -42,7 +42,7 @@ INLINE void gic_int_enable(const uint32_t id)
     const uint32_t  BIT_MASK     = 0x1ul << id%32;
     const uintptr_t ICDISER_ADDR = GIC_ICDISER0 + REG_INDEX*4;
 
-    wrpa(ICDISER_ADDR, BIT_MASK);
+    wpa(ICDISER_ADDR, BIT_MASK);
 }
 //------------------------------------------------------------------------------
 INLINE void gic_int_disable(const uint32_t id)
@@ -51,7 +51,7 @@ INLINE void gic_int_disable(const uint32_t id)
     const uint32_t  BIT_POS      = id%32;
     const uintptr_t ICDISER_ADDR = GIC_ICDISER0 + REG_INDEX*4;
 
-    wrpa(ICDISER_ADDR, 0x1ul << BIT_POS);
+    wpa(ICDISER_ADDR, 0x1ul << BIT_POS);
 }
 //------------------------------------------------------------------------------
 INLINE void gic_set_target(const uint32_t id, uint32_t trg)
@@ -85,7 +85,7 @@ INLINE void gic_set_pending(const uint32_t id)
     const uint32_t  BIT_MASK     = 0x1ul << id%32;
     const uintptr_t ICDISPR_ADDR = GIC_ICDISPR0 + REG_INDEX*4;
 
-    wrpa(ICDISPR_ADDR, BIT_MASK);
+    wpa(ICDISPR_ADDR, BIT_MASK);
 }
 //------------------------------------------------------------------------------
 enum TGicConfigField
@@ -329,7 +329,7 @@ INLINE void gpio_int_en(const uint32_t pinnum)
     const uint32_t  REG_ADDR = GPIO_INT_EN_0_REG + pinnum/32*0x40;
     const uint32_t  BIT_MASK = 0x1ul << pinnum%32;
 
-    wrpa(REG_ADDR, BIT_MASK);
+    wpa(REG_ADDR, BIT_MASK);
 }
 //------------------------------------------------------------------------------
 enum TGpioIntPol : uint32_t
@@ -353,7 +353,7 @@ INLINE void gpio_clr_int_sts(const uint32_t pinnum)
     const uint32_t  REG_ADDR = GPIO_INT_STAT_0_REG + pinnum/32*0x40;
     const uint32_t  BIT_MASK = 0x1ul << pinnum%32;
 
-    wrpa(REG_ADDR, BIT_MASK);  // reset interrupt status
+    wpa(REG_ADDR, BIT_MASK);  // reset interrupt status
 }
 //------------------------------------------------------------------------------
 
