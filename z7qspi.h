@@ -69,38 +69,31 @@
 //    command is issued without manual asserting of nCS line, hardware controls
 //    nCS - asserts before data send/receive and deasserts after.
 //
-class TQSpi
+class Qspi
 {
 public:
-    //TQSpi(uint32_t *buf) : CfgReg(0)
-    TQSpi()              : CfgReg(0)
-                         , CmdIndex(3)
-                         , Address(0)
-                         //, Buf(buf)
-                         , Count(0)
-                         , Response(0)
-                         , Launch(false)
+    Qspi() : cfg_reg(0)
     {
     }
 
     void init(bool manmode = true);
 
-    void cs_on()  { CfgReg &= ~QSPI_PCS_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
-    void cs_off() { CfgReg |=  QSPI_PCS_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
+    void cs_on()  { cfg_reg &= ~QSPI_PCS_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
+    void cs_off() { cfg_reg |=  QSPI_PCS_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
 
-    void man_cs_enable()  { CfgReg &= ~QSPI_MANUAL_CS_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
-    void man_cs_disable() { CfgReg |=  QSPI_MANUAL_CS_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
+    void man_cs_enable()  { cfg_reg &= ~QSPI_MANUAL_CS_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
+    void man_cs_disable() { cfg_reg |=  QSPI_MANUAL_CS_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
 
 //  void manual_mode_on  () { CfgReg &= ~QSPI_MAN_START_EN_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
 //  void manual_mode_off () { CfgReg |=  QSPI_MAN_START_EN_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
 
-    void start_transfer()   { CfgReg |= QSPI_MAN_START_COM_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
+    void start_transfer()   { cfg_reg |= QSPI_MAN_START_COM_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
 
   //  uint32_t read_id() { write_pa(QSPI_TXD0_REG, 0x00000090); return read_pa(QSPI_RX_DATA_REG); }
 
     //void run();
 
-    enum TCommandCode : uint32_t
+    enum CommandCode : uint8_t
     {
         // status
         cmdREAD_ID   = 0x90,
@@ -137,18 +130,19 @@ public:
         cmdQPP       = 0x32,
 
         // erase flash array
-        cmdP4E       = 0x20,
-        cmdSE        = 0xd8,
-        cmdBE        = 0x60
+        cmdEB4K       = 0x20,     // erase block 4k
+        cmdEB32K      = 0x52,     // erase block 32k
+        cmdEB64K      = 0xd8,     // erase block 64k
+        cmdCE         = 0x60      // chip erase
     };
 
-    enum TBufSize
+    enum BufSize
     {
         FIFO_SIZE = 63,               // words
         PAGE_SIZE = 64                // words
     };
 
-    enum TStatusRegBitMask
+    enum StatusRegBitMask
     {
         SRWD  = 1ul << 7,
         P_ERR = 1ul << 6,
@@ -164,13 +158,12 @@ public:
     uint16_t read_id();
     uint8_t  read_sr();
     uint8_t  read_cr();
-    void     wren();
+    uint8_t  wren();
     void     wrr(uint16_t regs);   // regs[7:0] - SR; regs[15:8] - CR
 
-    void     read(const uint32_t addr, uint32_t * const dst, uint32_t count);
+    uint32_t read(const uint32_t addr, uint32_t * const dst, uint32_t count);
 
-    void     p4erase(const uint32_t addr);
-    void     serase (const uint32_t addr);
+    void     erase (const uint32_t addr, const CommandCode = cmdEB64K);
 
     void     program_page(const uint32_t addr, const uint32_t *data);
     void     write(const uint32_t addr, const uint32_t *data, const uint32_t count);
@@ -184,13 +177,7 @@ private:
     void flush_rx_fifo();
 
 private:
-    volatile  uint32_t CfgReg;     // "cache" access to QSPI_CONFIG_REG
-    uint32_t  CmdIndex;
-    uint32_t  Address;
-    //uint32_t *Buf;
-    uint32_t  Count;
-    uint32_t  Response;            // service variable, contains result of the transaction
-    bool      Launch;
+    volatile  uint32_t cfg_reg;     // "cache" access to QSPI_CONFIG_REG
 };
 //------------------------------------------------------------------------------
 

@@ -32,7 +32,7 @@
 #include <z7qspi.h>
 
 //------------------------------------------------------------------------------
-void TQSpi::init(bool manmode)
+void Qspi::init(bool manmode)
 {
     wrpa(QSPI_EN_REG, 0);                                          // disable QSPI module
     //clr_bits_pa(QSPI_CONFIG_REG, QSPI_MANUAL_CS_MASK | QSPI_PCS_MASK | (1ul << 11)); // turn off nCS
@@ -70,10 +70,10 @@ void TQSpi::init(bool manmode)
                               QSPI_ENDIAN_MASK        +  //  little endian
                               QSPI_REF_CLK_MASK;         //  reserved, must be 0
                                                          //
-    CfgReg = rdpa(QSPI_CONFIG_REG);
-    CfgReg &= ~CLR_MASK;
-    CfgReg |=  SET_MASK;
-    wrpa(QSPI_CONFIG_REG, CfgReg);
+    cfg_reg = rdpa(QSPI_CONFIG_REG);
+    cfg_reg &= ~CLR_MASK;
+    cfg_reg |=  SET_MASK;
+    wrpa(QSPI_CONFIG_REG, cfg_reg);
 
     wrpa(QSPI_EN_REG, 1);                            // enable QSPI module
 
@@ -101,7 +101,7 @@ uint32_t TxBuf[1024];
 //    }
 //}
 //------------------------------------------------------------------------------
-uint16_t TQSpi::read_id()
+uint16_t Qspi::read_id()
 {
     wrpa(QSPI_RX_THRES_REG, 2);
     cs_on();
@@ -114,7 +114,7 @@ uint16_t TQSpi::read_id()
     return rdpa(QSPI_RX_DATA_REG) >> 16;
 }
 //------------------------------------------------------------------------------
-uint8_t TQSpi::read_sr()
+uint8_t Qspi::read_sr()
 {
     wrpa(QSPI_RX_THRES_REG, 1);
     cs_on();
@@ -125,7 +125,7 @@ uint8_t TQSpi::read_sr()
     return rdpa(QSPI_RX_DATA_REG) >> 24;
 }
 //------------------------------------------------------------------------------
-uint8_t TQSpi::read_cr()
+uint8_t Qspi::read_cr()
 {
     wrpa(QSPI_RX_THRES_REG, 1);
     cs_on();
@@ -136,7 +136,7 @@ uint8_t TQSpi::read_cr()
     return rdpa(QSPI_RX_DATA_REG) >> 24;
 }
 //------------------------------------------------------------------------------
-void TQSpi::wren()
+uint8_t Qspi::wren()
 {
     wrpa(QSPI_RX_THRES_REG, 1);
     cs_on();
@@ -144,10 +144,10 @@ void TQSpi::wren()
     start_transfer();
     while( ! (rdpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK) ) { }
     cs_off();
-    Response = rdpa(QSPI_RX_DATA_REG);
+    return rdpa(QSPI_RX_DATA_REG);
 }
 //------------------------------------------------------------------------------
-void TQSpi::wrr(uint16_t regs)      // regs[7:0] - SR; regs[15:8] - CR
+void Qspi::wrr(uint16_t regs)      // regs[7:0] - SR; regs[15:8] - CR
 {
     wren();
     wrpa(QSPI_RX_THRES_REG, 1);
@@ -159,20 +159,20 @@ void TQSpi::wrr(uint16_t regs)      // regs[7:0] - SR; regs[15:8] - CR
     rdpa(QSPI_RX_DATA_REG);
 }
 //------------------------------------------------------------------------------
-void TQSpi::serase(const uint32_t addr)
+void Qspi::erase(const uint32_t addr, const CommandCode cmd)
 {
     wren();
     wrpa(QSPI_RX_THRES_REG, 1);
     cs_on();
     uint32_t rev_addr = __builtin_bswap32(addr) >> 8;
-    wrpa(QSPI_TXD0_REG,  cmdSE + ( rev_addr << 8) );
+    wrpa(QSPI_TXD0_REG,  cmd + ( rev_addr << 8) );
     start_transfer();
     while( ! (rdpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK) ) { }
     cs_off();
     rdpa(QSPI_RX_DATA_REG);
 }
 //------------------------------------------------------------------------------
-void TQSpi::program_page(const uint32_t addr, const uint32_t *data)
+void Qspi::program_page(const uint32_t addr, const uint32_t *data)
 {
     wren();
     cs_on();
@@ -201,7 +201,7 @@ void TQSpi::program_page(const uint32_t addr, const uint32_t *data)
     while( wip() ) { }
 }
 //------------------------------------------------------------------------------
-void TQSpi::write(const uint32_t addr, const uint32_t *data, const uint32_t count)
+void Qspi::write(const uint32_t addr, const uint32_t *data, const uint32_t count)
 {
     const uint32_t CHUNKS = count > PAGE_SIZE ? count/PAGE_SIZE + 1 : 1;
     for(uint32_t i = 0; i < CHUNKS; ++i)
@@ -210,10 +210,10 @@ void TQSpi::write(const uint32_t addr, const uint32_t *data, const uint32_t coun
     }
 }
 //------------------------------------------------------------------------------
-void TQSpi::read(const uint32_t addr, uint32_t * const dst, uint32_t count)
+uint32_t Qspi::read(const uint32_t addr, uint32_t * const dst, uint32_t count)
 {
     if(!count)
-        return;
+        return 0;
 
     cs_on();
 
@@ -252,7 +252,7 @@ void TQSpi::read(const uint32_t addr, uint32_t * const dst, uint32_t count)
     }
 
     start_transfer();
-    uint32_t RxIndex = 0;
+    uint32_t rx_idx = 0;
     for(;;)
     {
         if( count && (rdpa(QSPI_INT_STS_REG) & QSPI_INT_STS_TX_FIFO_NOT_FULL_MASK) )
@@ -271,14 +271,13 @@ void TQSpi::read(const uint32_t addr, uint32_t * const dst, uint32_t count)
 
         if( rdpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK )
         {
-            read_rx_fifo(dst + RxIndex, rchunk);
-            RxIndex += rchunk;
-            rcount  -= rchunk;
+            read_rx_fifo(dst + rx_idx, rchunk);
+            rx_idx += rchunk;
+            rcount -= rchunk;
             if(rcount <= 63)
             {
                 if(rcount == 0)
                 {
-                    Response = RxIndex;
                     break;
                 }
 
@@ -289,9 +288,11 @@ void TQSpi::read(const uint32_t addr, uint32_t * const dst, uint32_t count)
     }
 
     cs_off();
+    
+    return rx_idx;
 }
 //------------------------------------------------------------------------------
-void TQSpi::fill_tx_fifo(const uint32_t count, const uint32_t pattern)
+void Qspi::fill_tx_fifo(const uint32_t count, const uint32_t pattern)
 {
     for(uint32_t i = 0; i < count; ++i)
     {
@@ -299,7 +300,7 @@ void TQSpi::fill_tx_fifo(const uint32_t count, const uint32_t pattern)
     }
 }
 //------------------------------------------------------------------------------
-void TQSpi::write_tx_fifo(const uint32_t *data, const uint32_t count)
+void Qspi::write_tx_fifo(const uint32_t *data, const uint32_t count)
 {
     for(uint32_t i = 0; i < count; ++i)
     {
@@ -307,7 +308,7 @@ void TQSpi::write_tx_fifo(const uint32_t *data, const uint32_t count)
     }
 }
 //------------------------------------------------------------------------------
-void TQSpi::read_rx_fifo(uint32_t * const dst, const uint32_t count)
+void Qspi::read_rx_fifo(uint32_t * const dst, const uint32_t count)
 {
     for(uint32_t i = 0; i < count; ++i)
     {
@@ -315,13 +316,12 @@ void TQSpi::read_rx_fifo(uint32_t * const dst, const uint32_t count)
     }
 }
 //------------------------------------------------------------------------------
-void TQSpi::flush_rx_fifo()
+void Qspi::flush_rx_fifo()
 {
     wrpa(QSPI_RX_THRES_REG, 1);
     while( rdpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK )
     {
         rdpa(QSPI_RX_DATA_REG);
-
     }
 }
 //------------------------------------------------------------------------------
