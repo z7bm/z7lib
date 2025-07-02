@@ -189,7 +189,9 @@ void TQSpi::program_page(const uint32_t addr, const uint32_t *data)
     start_transfer();
 
     while( !(rdpa(QSPI_INT_STS_REG) & QSPI_INT_STS_TX_FIFO_NOT_FULL_MASK) ) { }
+    flush_rx_fifo();
     write_tx_fifo(data + CHUNK0, CHUNK1);
+    start_transfer();
 
     wrpa(QSPI_TX_THRES_REG, 1);
     while( !(rdpa(QSPI_INT_STS_REG) & QSPI_INT_STS_TX_FIFO_NOT_FULL_MASK) ) { }
