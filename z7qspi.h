@@ -37,34 +37,34 @@
 
 //------------------------------------------------------------------------------
 //
-//    Quad-SPI 
+//    Quad-SPI
 //
 //    Notes:
 //    ~~~~~
-//    Default initialization brings modude to I/O Flash Mode with manual start 
-//    transfer. That is, 
-//     
+//    Default initialization brings modude to I/O Flash Mode with manual start
+//    transfer. That is,
+//
 //        CONFIG_REG[MAN_START_EN] = 1
 //        CONFIG_REG[MANUAL_CS]    = 0
 //        CONFIG_REG[PCS]          = 1
-// 
+//
 //    In this mode the user's software should write data into TxFIFO buffer and
 //    then issue write to CONFIG_REG[MAN_START_COM] = 1 (write-only bit). This
 //    begins transfer: hardware asserts nCS line, send out/receive to data
 //    through data I/O lines and deasserts nCS. In this case transfer length
 //    is limited with 252 bytes (63 words).
-// 
-//    For full manual control the user's software must turn on nCS line direct 
-//    control: CONFIG_REG[MANUAL_CS] = 1. This case, transaction consists of 
-//     
+//
+//    For full manual control the user's software must turn on nCS line direct
+//    control: CONFIG_REG[MANUAL_CS] = 1. This case, transaction consists of
+//
 //        * load data to TxFIFO buffer;
 //        * assert nCS by CONFIG_REG[PCS] = 0;
 //        * issue manual start command by CONFIG_REG[MAN_START_COM] = 1;
-//        * supply output buffer with data (output data or dummy data 
+//        * supply output buffer with data (output data or dummy data
 //          in case of flash reading) if need;
 //        * deassert nCS by CONFIG_REG[PCS] = 1;
-// 
-//    This method is little bit intrusive but is not limited with transfer 
+//
+//    This method is little bit intrusive but is not limited with transfer
 //    length. By the way, even when CONFIG_REG[MANUAL_CS] = 1 if manual start
 //    command is issued without manual asserting of nCS line, hardware controls
 //    nCS - asserts before data send/receive and deasserts after.
@@ -72,40 +72,41 @@
 class TQSpi
 {
 public:
-    TQSpi(uint32_t *buf) : CfgReg(0)
+    //TQSpi(uint32_t *buf) : CfgReg(0)
+    TQSpi()              : CfgReg(0)
                          , CmdIndex(3)
                          , Address(0)
-                         , Buf(buf)
+                         //, Buf(buf)
                          , Count(0)
                          , Response(0)
-                         , Launch(false) 
-    { 
+                         , Launch(false)
+    {
     }
-    
+
     void init(bool manmode = true);
-    
+
     void cs_on()  { CfgReg &= ~QSPI_PCS_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
     void cs_off() { CfgReg |=  QSPI_PCS_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
 
     void man_cs_enable()  { CfgReg &= ~QSPI_MANUAL_CS_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
     void man_cs_disable() { CfgReg |=  QSPI_MANUAL_CS_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
-    
-    void manual_mode_on  () { CfgReg &= ~QSPI_MAN_START_EN_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
-    void manual_mode_off () { CfgReg |=  QSPI_MAN_START_EN_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
-    
+
+//  void manual_mode_on  () { CfgReg &= ~QSPI_MAN_START_EN_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
+//  void manual_mode_off () { CfgReg |=  QSPI_MAN_START_EN_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
+
     void start_transfer()   { CfgReg |= QSPI_MAN_START_COM_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
-    
+
   //  uint32_t read_id() { write_pa(QSPI_TXD0_REG, 0x00000090); return read_pa(QSPI_RX_DATA_REG); }
-    
-    void run();
-    
+
+    //void run();
+
     enum TCommandCode : uint32_t
     {
         // status
         cmdREAD_ID   = 0x90,
         cmdRDID      = 0x9f,
         cmdRES       = 0xab,
-        
+
         // register access
         cmdRDSR1     = 0x05,
         cmdRDSR2     = 0x07,
@@ -122,7 +123,7 @@ public:
         cmdDLPRD     = 0x41,
         cmdPNVDLR    = 0x43,
         cmdWVDLR     = 0x4a,
-        
+
         // read flash array
         cmdREAD      = 0x03,
         cmdFAST_READ = 0x0b,
@@ -140,13 +141,13 @@ public:
         cmdSE        = 0xd8,
         cmdBE        = 0x60
     };
-    
+
     enum TBufSize
     {
         FIFO_SIZE = 63,               // words
         PAGE_SIZE = 64                // words
     };
-    
+
     enum TStatusRegBitMask
     {
         SRWD  = 1ul << 7,
@@ -158,35 +159,35 @@ public:
         WEL   = 1ul << 1,
         WIP   = 1ul << 0
     };
-    
+
 public:
     uint16_t read_id();
     uint8_t  read_sr();
     uint8_t  read_cr();
     void     wren();
-    void     wrr(uint16_t regs);   // regs[7:0] - SR; regs[15:8] - CR 
+    void     wrr(uint16_t regs);   // regs[7:0] - SR; regs[15:8] - CR
 
     void     read(const uint32_t addr, uint32_t * const dst, uint32_t count);
 
     void     p4erase(const uint32_t addr);
     void     serase (const uint32_t addr);
-    
+
     void     program_page(const uint32_t addr, const uint32_t *data);
     void     write(const uint32_t addr, const uint32_t *data, const uint32_t count);
-    
+
     INLINE bool wip() { return read_sr() & WIP; }
-    
+
 private:
     void fill_tx_fifo  (const uint32_t count, const uint32_t pattern = 0);
     void write_tx_fifo (const uint32_t *data, const uint32_t count);
     void read_rx_fifo  (uint32_t * const dst, const uint32_t count);
     void flush_rx_fifo();
-    
+
 private:
     volatile  uint32_t CfgReg;     // "cache" access to QSPI_CONFIG_REG
     uint32_t  CmdIndex;
     uint32_t  Address;
-    uint32_t *Buf;
+    //uint32_t *Buf;
     uint32_t  Count;
     uint32_t  Response;            // service variable, contains result of the transaction
     bool      Launch;
