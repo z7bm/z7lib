@@ -78,12 +78,12 @@ public:
 
     void init(bool manmode = true);
 
-    void cs_on()  { cfg_reg &= ~QSPI_PCS_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
-    void cs_off() { cfg_reg |=  QSPI_PCS_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
+    void cs_on()  { cfg_reg &= ~QSPI_PCS_MASK; wpa(QSPI_CONFIG_REG, cfg_reg); }
+    void cs_off() { cfg_reg |=  QSPI_PCS_MASK; wpa(QSPI_CONFIG_REG, cfg_reg); }
 
-    void man_cs_enable()  { cfg_reg &= ~QSPI_MANUAL_CS_MASK;     wrpa(QSPI_CONFIG_REG, cfg_reg); }
-    void man_cs_disable() { cfg_reg |=  QSPI_MANUAL_CS_MASK;     wrpa(QSPI_CONFIG_REG, cfg_reg); }
-    void start_transfer() { cfg_reg |=  QSPI_MAN_START_COM_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
+    void man_cs_enable()  { cfg_reg &= ~QSPI_MANUAL_CS_MASK;     wpa(QSPI_CONFIG_REG, cfg_reg); }
+    void man_cs_disable() { cfg_reg |=  QSPI_MANUAL_CS_MASK;     wpa(QSPI_CONFIG_REG, cfg_reg); }
+    void start_transfer() { cfg_reg |=  QSPI_MAN_START_COM_MASK; wpa(QSPI_CONFIG_REG, cfg_reg); }
 
 
     enum CommandCode : uint8_t

@@ -50,7 +50,7 @@ constexpr void pin_on(const T id)
     uint32_t clear_mask = ~(1ul << num) << 16;
     uint32_t set_mask   =   1ul << num;
     
-    wrpa(reg, clear_mask | set_mask);
+    wpa(reg, clear_mask | set_mask);
 }
 //------------------------------------------------------------------------------
 template<typename T>
@@ -60,12 +60,12 @@ constexpr void pin_off(const T id)
     uint32_t num        = id%16;
     uint32_t clear_mask = ~(1ul << num) << 16;
 
-    wrpa(reg, clear_mask);
+    wpa(reg, clear_mask);
 }
 //------------------------------------------------------------------------------
 inline bool pin_is_set(const uint32_t id)
 {
-    return rdpa(GPIO_DATA_0_REG) & (1ul << id);
+    return rpa(GPIO_DATA_0_REG) & (1ul << id);
 }
 //------------------------------------------------------------------------------
 

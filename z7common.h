@@ -44,13 +44,13 @@
 //    Physical address access
 // 
 //        suffix 'pa' means 'physical address'
-//        wr: write
-//        rd: read
+//        w:  write
+//        r:  read
 //        cb: clear bits
 //        sb: set bits
 //
-INLINE void     wrpa(uintptr_t addr, const uint32_t data) { *( reinterpret_cast<volatile uint32_t*>(addr) ) =  data;  }
-INLINE uint32_t rdpa (uintptr_t addr)                     { return *( reinterpret_cast<volatile uint32_t*>(addr) );   }
+INLINE void     wpa (uintptr_t addr, const uint32_t data) { *( reinterpret_cast<volatile uint32_t*>(addr) ) =  data;  }
+INLINE uint32_t rpa (uintptr_t addr)                      { return *( reinterpret_cast<volatile uint32_t*>(addr) );   }
 INLINE void     cbpa(uintptr_t addr, const uint32_t mask) { *( reinterpret_cast<volatile uint32_t*>(addr) ) &= ~mask; }
 INLINE void     sbpa(uintptr_t addr, const uint32_t mask) { *( reinterpret_cast<volatile uint32_t*>(addr) ) |=  mask; }
 //------------------------------------------------------------------------------
@@ -84,8 +84,8 @@ INLINE uint_fast8_t __clz(uint32_t val)
 }
 
 //------------------------------------------------------------------------------
-INLINE void slcr_lock()   { wrpa(SLCR_LOCK_REG,   0x767B); }
-INLINE void slcr_unlock() { wrpa(SLCR_UNLOCK_REG, 0xDF0D); }
+INLINE void slcr_lock()   { wpa(SLCR_LOCK_REG,   0x767B); }
+INLINE void slcr_unlock() { wpa(SLCR_UNLOCK_REG, 0xDF0D); }
 //------------------------------------------------------------------------------
 
 #endif  // PS7COMMON_H

@@ -52,12 +52,12 @@ struct PrivateTimer
 
     template<typename T> constexpr static void set_reload_value(T f, T t)  // f: MHz, t: us
     {
-        wrpa(PTMR_LOAD_REG, f*t - 1);
+        wpa(PTMR_LOAD_REG, f*t - 1);
     }
 
     static void start()
     {
-        wrpa(PTMR_CTLR_REG, PTMR_CTLR_TIMER_ENABLE_MASK |
+        wpa(PTMR_CTLR_REG, PTMR_CTLR_TIMER_ENABLE_MASK |
                             PTMR_CTLR_AUTO_RELOAD_MASK  |
                             PTMR_CTLR_IRQ_ENABLE_MASK);
     }
