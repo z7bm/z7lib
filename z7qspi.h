@@ -81,17 +81,10 @@ public:
     void cs_on()  { cfg_reg &= ~QSPI_PCS_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
     void cs_off() { cfg_reg |=  QSPI_PCS_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
 
-    void man_cs_enable()  { cfg_reg &= ~QSPI_MANUAL_CS_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
-    void man_cs_disable() { cfg_reg |=  QSPI_MANUAL_CS_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
+    void man_cs_enable()  { cfg_reg &= ~QSPI_MANUAL_CS_MASK;     wrpa(QSPI_CONFIG_REG, cfg_reg); }
+    void man_cs_disable() { cfg_reg |=  QSPI_MANUAL_CS_MASK;     wrpa(QSPI_CONFIG_REG, cfg_reg); }
+    void start_transfer() { cfg_reg |=  QSPI_MAN_START_COM_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
 
-//  void manual_mode_on  () { CfgReg &= ~QSPI_MAN_START_EN_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
-//  void manual_mode_off () { CfgReg |=  QSPI_MAN_START_EN_MASK; wrpa(QSPI_CONFIG_REG, CfgReg); }
-
-    void start_transfer()   { cfg_reg |= QSPI_MAN_START_COM_MASK; wrpa(QSPI_CONFIG_REG, cfg_reg); }
-
-  //  uint32_t read_id() { write_pa(QSPI_TXD0_REG, 0x00000090); return read_pa(QSPI_RX_DATA_REG); }
-
-    //void run();
 
     enum CommandCode : uint8_t
     {

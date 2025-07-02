@@ -34,10 +34,7 @@
 //------------------------------------------------------------------------------
 void Qspi::init(bool manmode)
 {
-    wrpa(QSPI_EN_REG, 0);                                          // disable QSPI module
-    //clr_bits_pa(QSPI_CONFIG_REG, QSPI_MANUAL_CS_MASK | QSPI_PCS_MASK | (1ul << 11)); // turn off nCS
-
-    //  software reset
+    wrpa(QSPI_EN_REG, 0); // disable QSPI module
 
     // reset QSPI clocks
     slcr_unlock();
@@ -49,8 +46,7 @@ void Qspi::init(bool manmode)
     wrpa(QSPI_RX_THRES_REG, 1);
     wrpa(QSPI_TX_THRES_REG, 1);
 
-    //  set up configuration registers
-
+    // set up configuration
     cbpa(QSPI_LQSPI_CFG_REG, QSPI_LQ_MODE_MASK);  // turn off linear mode
 
     const uint32_t MAN_MODE = manmode ? (QSPI_MAN_START_EN_MASK | QSPI_MANUAL_CS_MASK) : 0;
@@ -79,27 +75,6 @@ void Qspi::init(bool manmode)
 
 
 }
-//------------------------------------------------------------------------------
-uint32_t TxBuf[1024];
-
-//void TQSpi::run()
-//{
-//    if(Launch)
-//    {
-//        switch(CmdIndex)
-//        {
-//        case 0: Response = read_id();         break;
-//        case 1: Response = read_sr();         break;
-//        case 2: Response = read_cr();         break;
-//        case 3: read(Address, Buf, Count);    break;
-//        case 4: wren();                       break;
-//        case 5: wrr(Buf[0]);                  break;
-//        case 6: serase(Address);              break;
-//        case 7: write(Address, TxBuf, Count); break;
-//        }
-//        Launch = false;
-//    }
-//}
 //------------------------------------------------------------------------------
 uint16_t Qspi::read_id()
 {
