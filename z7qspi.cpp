@@ -176,17 +176,19 @@ void Qspi::program_page(const uint32_t addr, const uint32_t *data)
     while( wip() ) { }
 }
 //------------------------------------------------------------------------------
-void Qspi::write(const uint32_t addr, const uint32_t *data, const uint32_t count)
+void Qspi::write(const uint32_t addr, const uint8_t *data, const uint32_t count)
 {
-    const uint32_t CHUNKS = count/PAGE_SIZE + (count%PAGE_SIZE ? 1 : 0);
+    const uint32_t WCOUNT = count/4 + (count%4 ? 1 : 0);
+    const uint32_t CHUNKS = WCOUNT/PAGE_SIZE + (WCOUNT%PAGE_SIZE ? 1 : 0);
+    const uint32_t *p     = reinterpret_cast<const uint32_t *>(data);
 
     for(uint32_t i = 0; i < CHUNKS; ++i)
     {
-        program_page(addr + i*PAGE_SIZE*sizeof(uint32_t), data + i*PAGE_SIZE);
+        program_page(addr + i*PAGE_SIZE*sizeof(uint32_t), p + i*PAGE_SIZE);
     }
 }
 //------------------------------------------------------------------------------
-uint32_t Qspi::read(const uint32_t addr, uint32_t * const dst, uint32_t count)
+uint32_t Qspi::read(const uint32_t addr, uint8_t * const dst, uint32_t count)
 {
     if(!count)
         return 0;
@@ -210,44 +212,45 @@ uint32_t Qspi::read(const uint32_t addr, uint32_t * const dst, uint32_t count)
           uint32_t rchunk;
 
     // data transfer
-    uint32_t rcount = count;
-    if(count > 63)
+    uint32_t wcount = count/4 + (count%4 ? 1 : 0);
+    uint32_t rcount = wcount;
+    if(wcount > 63)
     {
         fill_tx_fifo(63);
-        count -= 63;
+        wcount -= 63;
         wpa(QSPI_TX_THRES_REG, FIFO_SIZE - CHUNK_SIZE + 1);
         wpa(QSPI_RX_THRES_REG, CHUNK_SIZE);
         rchunk = CHUNK_SIZE;
     }
     else
     {
-        fill_tx_fifo(count);
-        wpa(QSPI_RX_THRES_REG, count);
-        rchunk = count;
-        count = 0;
+        fill_tx_fifo(wcount);
+        wpa(QSPI_RX_THRES_REG, wcount);
+        rchunk = wcount;
+        wcount = 0;
     }
 
     start_transfer();
     uint32_t rx_idx = 0;
     for(;;)
     {
-        if( count && (rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_TX_FIFO_NOT_FULL_MASK) )
+        if( wcount && (rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_TX_FIFO_NOT_FULL_MASK) )
         {
-            if(count > CHUNK_SIZE)
+            if(wcount > CHUNK_SIZE)
             {
                 fill_tx_fifo(CHUNK_SIZE);
-                count -= CHUNK_SIZE;
+                wcount -= CHUNK_SIZE;
             }
             else
             {
-                fill_tx_fifo(count);
-                count = 0;
+                fill_tx_fifo(wcount);
+                wcount = 0;
             }
         }
 
         if( rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK )
         {
-            read_rx_fifo(dst + rx_idx, rchunk);
+            read_rx_fifo(dst + rx_idx*sizeof(uint32_t), rchunk);
             rx_idx += rchunk;
             rcount -= rchunk;
             if(rcount <= 63)
@@ -264,7 +267,7 @@ uint32_t Qspi::read(const uint32_t addr, uint32_t * const dst, uint32_t count)
     }
 
     cs_off();
-    
+
     return rx_idx;
 }
 //------------------------------------------------------------------------------
@@ -284,11 +287,15 @@ void Qspi::write_tx_fifo(const uint32_t *data, const uint32_t count)
     }
 }
 //------------------------------------------------------------------------------
-void Qspi::read_rx_fifo(uint32_t * const dst, const uint32_t count)
+void Qspi::read_rx_fifo(uint8_t * const dst, const uint32_t count)
 {
     for(uint32_t i = 0; i < count; ++i)
     {
-        dst[i] = rpa(QSPI_RX_DATA_REG);
+        uint32_t val = rpa(QSPI_RX_DATA_REG);
+        dst[i*sizeof(uint32_t) + 0] = val;
+        dst[i*sizeof(uint32_t) + 1] = val >> 8;
+        dst[i*sizeof(uint32_t) + 2] = val >> 16;
+        dst[i*sizeof(uint32_t) + 3] = val >> 24;
     }
 }
 //------------------------------------------------------------------------------

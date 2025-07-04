@@ -154,8 +154,8 @@ public:
     uint8_t  wren();
     void     wrr(uint16_t regs);   // regs[7:0] - SR; regs[15:8] - CR
 
-    uint32_t read (const uint32_t addr, uint32_t * const dst, uint32_t count);
-    void     write(const uint32_t addr, const uint32_t *data, const uint32_t count);
+    uint32_t read (const uint32_t addr, uint8_t * const dst, uint32_t count);
+    void     write(const uint32_t addr, const uint8_t *data, const uint32_t count);
     void     erase(const uint32_t addr, const CommandCode = cmdEB64K);
 
 private:
@@ -163,7 +163,7 @@ private:
     void program_page  (const uint32_t addr, const uint32_t *data);
     void fill_tx_fifo  (const uint32_t count, const uint32_t pattern = 0);
     void write_tx_fifo (const uint32_t *data, const uint32_t count);
-    void read_rx_fifo  (uint32_t * const dst, const uint32_t count);
+    void read_rx_fifo  (uint8_t * const dst, const uint32_t count);
     void flush_rx_fifo ();
 
 private:
