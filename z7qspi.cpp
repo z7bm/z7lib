@@ -145,6 +145,7 @@ void Qspi::erase(const uint32_t addr, const CommandCode cmd)
     while( ! (rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK) ) { }
     cs_off();
     rpa(QSPI_RX_DATA_REG);
+    while( wip() ) { }
 }
 //------------------------------------------------------------------------------
 void Qspi::program_page(const uint32_t addr, const uint32_t *data)
