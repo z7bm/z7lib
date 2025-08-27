@@ -215,10 +215,10 @@ uint32_t Qspi::read(const uint32_t addr, uint8_t * const dst, uint32_t count)
     // data transfer
     uint32_t wcount = count/4 + (count%4 ? 1 : 0);
     uint32_t rcount = wcount;
-    if(wcount > 63)
+    if(wcount > FIFO_SIZE)
     {
-        fill_tx_fifo(63);
-        wcount -= 63;
+        fill_tx_fifo(FIFO_SIZE);
+        wcount -= FIFO_SIZE;
         wpa(QSPI_TX_THRES_REG, FIFO_SIZE - CHUNK_SIZE + 1);
         wpa(QSPI_RX_THRES_REG, CHUNK_SIZE);
         rchunk = CHUNK_SIZE;
