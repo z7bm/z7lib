@@ -269,7 +269,7 @@ uint32_t Qspi::read(const uint32_t addr, uint8_t * const dst, uint32_t count)
 
     cs_off();
 
-    return rx_idx;
+    return rx_idx*sizeof(uint32_t);
 }
 //------------------------------------------------------------------------------
 void Qspi::fill_tx_fifo(const uint32_t count, const uint32_t pattern)
