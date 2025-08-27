@@ -42,13 +42,14 @@
 //------------------------------------------------------------------------------
 //
 //    Physical address access
-// 
+//
 //        suffix 'pa' means 'physical address'
 //        w:  write
 //        r:  read
 //        cb: clear bits
 //        sb: set bits
 //
+#ifdef __cplusplus
 INLINE void     wpa (uintptr_t addr, const uint32_t data) { *( reinterpret_cast<volatile uint32_t*>(addr) ) =  data;  }
 INLINE uint32_t rpa (uintptr_t addr)                      { return *( reinterpret_cast<volatile uint32_t*>(addr) );   }
 INLINE void     cbpa(uintptr_t addr, const uint32_t mask) { *( reinterpret_cast<volatile uint32_t*>(addr) ) &= ~mask; }
@@ -62,6 +63,7 @@ INLINE void sbpa(uintptr_t addr, const uint32_t mask, const uint32_t bfmask)
     reg |=  mask;
     *( reinterpret_cast<volatile uint32_t*>(addr) ) = reg;
 }
+#endif // __cplusplus
 //------------------------------------------------------------------------------
 //
 //    Intrinsics
@@ -76,7 +78,7 @@ INLINE void __dmb() { __asm__ __volatile__("    dmb"); }
 INLINE void __dsb() { __asm__ __volatile__("    dsb"); }
 INLINE void __isb() { __asm__ __volatile__("    isb"); }
 
-INLINE uint_fast8_t __clz(uint32_t val) 
+INLINE uint_fast8_t __clz(uint32_t val)
 {
   uint_fast8_t res;
   __asm__ __volatile__ ("clz %0, %1" : "=r" (res) : "r" (val) );
@@ -84,8 +86,10 @@ INLINE uint_fast8_t __clz(uint32_t val)
 }
 
 //------------------------------------------------------------------------------
+#ifdef __cplusplus
 INLINE void slcr_lock()   { wpa(SLCR_LOCK_REG,   0x767B); }
 INLINE void slcr_unlock() { wpa(SLCR_UNLOCK_REG, 0xDF0D); }
+#endif
 //------------------------------------------------------------------------------
 
 #endif  // PS7COMMON_H
