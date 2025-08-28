@@ -85,6 +85,12 @@ INLINE uint_fast8_t __clz(uint32_t val)
   return(res);
 }
 
+INLINE void set_vbar(void *addr)
+{
+  __asm__ __volatile__ ("mcr p15, 0, %0, c12, c0, 0" :  : "r" (addr));
+}
+
+
 //------------------------------------------------------------------------------
 #ifdef __cplusplus
 INLINE void slcr_lock()   { wpa(SLCR_LOCK_REG,   0x767B); }
