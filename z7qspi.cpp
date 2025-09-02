@@ -69,8 +69,8 @@ void Qspi::init(bool manmode)
     cfg_reg = rpa(QSPI_CONFIG_REG);
     cfg_reg &= ~CLR_MASK;
     cfg_reg |=  SET_MASK;
-    wpa(QSPI_CONFIG_REG, cfg_reg);
 
+    wpa(QSPI_CONFIG_REG, cfg_reg);
     wpa(QSPI_EN_REG, 1);                            // enable QSPI module
 
 
@@ -209,61 +209,36 @@ uint32_t Qspi::read(const uint32_t addr, uint8_t * const dst, uint32_t count)
     while( !(rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK) ) { }
     rpa(QSPI_RX_DATA_REG);      // drop dummy data response
 
-    const uint32_t CHUNK_SIZE = 32; // words
-          uint32_t rchunk;
-
     // data transfer
     uint32_t wcount = count/4 + (count%4 ? 1 : 0);
-    uint32_t rcount = wcount;
-    if(wcount > FIFO_SIZE)
-    {
-        fill_tx_fifo(FIFO_SIZE);
-        wcount -= FIFO_SIZE;
-        wpa(QSPI_TX_THRES_REG, FIFO_SIZE - CHUNK_SIZE + 1);
-        wpa(QSPI_RX_THRES_REG, CHUNK_SIZE);
-        rchunk = CHUNK_SIZE;
-    }
-    else
-    {
-        fill_tx_fifo(wcount);
-        wpa(QSPI_RX_THRES_REG, wcount);
-        rchunk = wcount;
-        wcount = 0;
-    }
 
-    start_transfer();
+    uint32_t rchunk;
     uint32_t rx_idx = 0;
     for(;;)
     {
-        if( wcount && (rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_TX_FIFO_NOT_FULL_MASK) )
+        rchunk = 0;
+        while( !(rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_TX_FIFO_FULL_MASK) )
         {
-            if(wcount > CHUNK_SIZE)
+            wpa(QSPI_TXD0_REG, 0);
+            ++rchunk;
+            if(--wcount == 0)
             {
-                fill_tx_fifo(CHUNK_SIZE);
-                wcount -= CHUNK_SIZE;
-            }
-            else
-            {
-                fill_tx_fifo(wcount);
-                wcount = 0;
+                break;
             }
         }
+        start_transfer();
+        
+        wpa(QSPI_RX_THRES_REG, rchunk);
 
-        if( rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK )
+        while(!(rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK)) { }
+        while(!(rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK)) { }
+        
+        read_rx_fifo(dst + rx_idx*sizeof(uint32_t), rchunk);
+        rx_idx += rchunk;
+        
+        if(!wcount)
         {
-            read_rx_fifo(dst + rx_idx*sizeof(uint32_t), rchunk);
-            rx_idx += rchunk;
-            rcount -= rchunk;
-            if(rcount <= 63)
-            {
-                if(rcount == 0)
-                {
-                    break;
-                }
-
-                wpa(QSPI_RX_THRES_REG, rcount);
-                rchunk = rcount;
-            }
+            break;
         }
     }
 
