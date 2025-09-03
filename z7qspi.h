@@ -153,8 +153,8 @@ public:
     uint8_t  wren();
     void     wrr(uint16_t regs);   // regs[7:0] - SR; regs[15:8] - CR
 
-    uint32_t read (const uint32_t addr, uint8_t * const dst, uint32_t count);
-    void     write(const uint32_t addr, const uint8_t *data, const uint32_t count);
+    uint32_t read (const uint32_t addr, void * const dst, uint32_t count);
+    void     write(const uint32_t addr, const void *data, const uint32_t count);
     void     erase(const uint32_t addr, const CommandCode = cmdEB64K);
 
 private:

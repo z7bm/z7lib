@@ -177,7 +177,7 @@ void Qspi::program_page(const uint32_t addr, const uint32_t *data)
     while( wip() ) { }
 }
 //------------------------------------------------------------------------------
-void Qspi::write(const uint32_t addr, const uint8_t *data, const uint32_t count)
+void Qspi::write(const uint32_t addr, const void *data, const uint32_t count)
 {
     const uint32_t WCOUNT = count/4 + (count%4 ? 1 : 0);
     const uint32_t CHUNKS = WCOUNT/PAGE_SIZE + (WCOUNT%PAGE_SIZE ? 1 : 0);
@@ -189,10 +189,12 @@ void Qspi::write(const uint32_t addr, const uint8_t *data, const uint32_t count)
     }
 }
 //------------------------------------------------------------------------------
-uint32_t Qspi::read(const uint32_t addr, uint8_t * const dst, uint32_t count)
+uint32_t Qspi::read(const uint32_t addr, void * const pdst, uint32_t count)
 {
     if(!count)
         return 0;
+
+    uint8_t * const dst = reinterpret_cast<uint8_t * const>(pdst);
 
     cs_on();
 
