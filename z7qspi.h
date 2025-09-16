@@ -96,7 +96,6 @@ public:
         // register access
         cmdRDSR1     = 0x05,
         cmdRDSR2     = 0x35,
-        cmdWRR       = 0x01,
         cmdWRDI      = 0x04,
         cmdWREN      = 0x06,
         cmdCLSR      = 0x30,
@@ -151,7 +150,6 @@ public:
     uint8_t  read_sr();
     uint8_t  read_sr2();
     uint8_t  wren();
-    void     wrr(uint16_t regs);   // regs[7:0] - SR; regs[15:8] - CR
 
     uint32_t read (const uint32_t addr, void * const dst, uint32_t count);
     void     write(const uint32_t addr, const void *data, const uint32_t count);

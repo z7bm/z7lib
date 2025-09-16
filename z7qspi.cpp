@@ -122,18 +122,6 @@ uint8_t Qspi::wren()
     return rpa(QSPI_RX_DATA_REG);
 }
 //------------------------------------------------------------------------------
-void Qspi::wrr(uint16_t regs)      // regs[7:0] - SR; regs[15:8] - CR
-{
-    wren();
-    wpa(QSPI_RX_THRES_REG, 1);
-    cs_on();
-    wpa(QSPI_TXD3_REG,  cmdWRR + ( regs << 8) );
-    start_transfer();
-    while( ! (rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK) ) { }
-    cs_off();
-    rpa(QSPI_RX_DATA_REG);
-}
-//------------------------------------------------------------------------------
 void Qspi::erase(const uint32_t addr, const CommandCode cmd)
 {
     wren();
