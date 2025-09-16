@@ -96,7 +96,8 @@ public:
         // register access
         cmdRDSR1     = 0x05,
         cmdRDSR2     = 0x35,
-        cmdWRR       = 0x01,
+        cmdWRSR1     = 0x01,
+        cmdWRSR2     = 0x31,
         cmdWRDI      = 0x04,
         cmdWREN      = 0x06,
         cmdCLSR      = 0x30,
@@ -148,17 +149,17 @@ public:
 
 public:
     uint16_t read_id();
-    uint8_t  read_sr();
+    uint8_t  read_sr1();
     uint8_t  read_sr2();
+    void     write_sr2(uint8_t reg);
     uint8_t  wren();
-    void     wrr(uint16_t regs);   // regs[7:0] - SR; regs[15:8] - CR
 
     uint32_t read (const uint32_t addr, void * const dst, uint32_t count);
     void     write(const uint32_t addr, const void *data, const uint32_t count);
     void     erase(const uint32_t addr, const CommandCode = cmdEB64K);
 
 private:
-    INLINE bool wip() { return read_sr() & WIP; }
+    INLINE bool wip() { return read_sr1() & WIP; }
     void program_page  (const uint32_t addr, const uint32_t *data);
     void fill_tx_fifo  (const uint32_t count, const uint32_t pattern = 0);
     void write_tx_fifo (const uint32_t *data, const uint32_t count);

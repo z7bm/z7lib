@@ -89,7 +89,7 @@ uint16_t Qspi::read_id()
     return rpa(QSPI_RX_DATA_REG) >> 16;
 }
 //------------------------------------------------------------------------------
-uint8_t Qspi::read_sr()
+uint8_t Qspi::read_sr1()
 {
     wpa(QSPI_RX_THRES_REG, 1);
     cs_on();
@@ -111,6 +111,18 @@ uint8_t Qspi::read_sr2()
     return rpa(QSPI_RX_DATA_REG) >> 24;
 }
 //------------------------------------------------------------------------------
+void Qspi::write_sr2(uint8_t reg)
+{
+    wren();
+    wpa(QSPI_RX_THRES_REG, 1);
+    cs_on();
+    wpa(QSPI_TXD2_REG,  cmdWRSR2 + ( reg << 8) );
+    start_transfer();
+    while( ! (rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK) ) { }
+    cs_off();
+    rpa(QSPI_RX_DATA_REG);
+}
+//------------------------------------------------------------------------------
 uint8_t Qspi::wren()
 {
     wpa(QSPI_RX_THRES_REG, 1);
@@ -120,18 +132,6 @@ uint8_t Qspi::wren()
     while( ! (rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK) ) { }
     cs_off();
     return rpa(QSPI_RX_DATA_REG);
-}
-//------------------------------------------------------------------------------
-void Qspi::wrr(uint16_t regs)      // regs[7:0] - SR; regs[15:8] - CR
-{
-    wren();
-    wpa(QSPI_RX_THRES_REG, 1);
-    cs_on();
-    wpa(QSPI_TXD3_REG,  cmdWRR + ( regs << 8) );
-    start_transfer();
-    while( ! (rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK) ) { }
-    cs_off();
-    rpa(QSPI_RX_DATA_REG);
 }
 //------------------------------------------------------------------------------
 void Qspi::erase(const uint32_t addr, const CommandCode cmd)
