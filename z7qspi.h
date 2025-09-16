@@ -97,6 +97,7 @@ public:
         cmdRDSR1     = 0x05,
         cmdRDSR2     = 0x35,
         cmdWRSR1     = 0x01,
+        cmdWRSR2     = 0x31,
         cmdWRDI      = 0x04,
         cmdWREN      = 0x06,
         cmdCLSR      = 0x30,
@@ -150,6 +151,7 @@ public:
     uint16_t read_id();
     uint8_t  read_sr1();
     uint8_t  read_sr2();
+    void     write_sr2(uint8_t reg);
     uint8_t  wren();
 
     uint32_t read (const uint32_t addr, void * const dst, uint32_t count);

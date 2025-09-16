@@ -111,6 +111,18 @@ uint8_t Qspi::read_sr2()
     return rpa(QSPI_RX_DATA_REG) >> 24;
 }
 //------------------------------------------------------------------------------
+void Qspi::write_sr2(uint8_t reg)
+{
+    wren();
+    wpa(QSPI_RX_THRES_REG, 1);
+    cs_on();
+    wpa(QSPI_TXD2_REG,  cmdWRSR2 + ( reg << 8) );
+    start_transfer();
+    while( ! (rpa(QSPI_INT_STS_REG) & QSPI_INT_STS_RX_FIFO_NOT_EMPTY_MASK) ) { }
+    cs_off();
+    rpa(QSPI_RX_DATA_REG);
+}
+//------------------------------------------------------------------------------
 uint8_t Qspi::wren()
 {
     wpa(QSPI_RX_THRES_REG, 1);
