@@ -89,7 +89,7 @@ uint16_t Qspi::read_id()
     return rpa(QSPI_RX_DATA_REG) >> 16;
 }
 //------------------------------------------------------------------------------
-uint8_t Qspi::read_sr()
+uint8_t Qspi::read_sr1()
 {
     wpa(QSPI_RX_THRES_REG, 1);
     cs_on();
