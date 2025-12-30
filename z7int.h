@@ -342,13 +342,13 @@ INLINE void gpio_int_en(const uint32_t pinnum)
     wpa(REG_ADDR, BIT_MASK);
 }
 //------------------------------------------------------------------------------
-enum TGpioIntPol : uint32_t
+enum GpioIntPol : uint32_t
 {
     GPIO_INT_POL_LOW_FALL  = 0,
     GPIO_INT_POL_HIGH_RISE = 1
 };
 
-INLINE void gpio_int_pol(const uint32_t pinnum, const TGpioIntPol)
+INLINE void gpio_int_pol(const uint32_t pinnum, const GpioIntPol)
 {
     const uint32_t  REG_ADDR = GPIO_INT_POLARITY_0_REG + pinnum/32*0x40;
     const uint32_t  BIT_MASK = 0x1ul << pinnum%32;
