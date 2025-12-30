@@ -75,7 +75,7 @@ INLINE void gic_set_config(const uint32_t id, uint32_t cfg)
 INLINE void gic_set_priority(const uint32_t id, uint32_t pr)
 {
     uint8_t *p = reinterpret_cast<uint8_t *>(GIC_ICDIPR0 + id);
-    
+
     *p = pr << 3;
 }
 //------------------------------------------------------------------------------
@@ -108,8 +108,18 @@ enum TGicCpuID
     GIC_CPU1  = 1ul << 1
 };
 //------------------------------------------------------------------------------
-INLINE void enable_interrupts()  { __asm__ __volatile__ ("    cpsie i \n"); }
-INLINE void disable_interrupts() { __asm__ __volatile__ ("    cpsid i \n"); }
+INLINE void enable_interrupts()
+{
+    __asm__ __volatile__ ("    cpsie i\n" ::: "memory");
+    __asm__ __volatile__ ("    dsb\n");
+    __asm__ __volatile__ ("    isb\n");
+}
+INLINE void disable_interrupts()
+{
+    __asm__ __volatile__ ("    cpsid i\n" ::: "memory");
+    __asm__ __volatile__ ("    dsb\n");
+    __asm__ __volatile__ ("    isb\n");
+}
 //------------------------------------------------------------------------------
 INLINE void enable_nested_interrupts()
 {
@@ -312,18 +322,19 @@ typedef void (*isr_ptr_t)();
 
 void ps7_register_isr(isr_ptr_t ptr, uint32_t id);
 
+extern isr_ptr_t ps7_handlers[PS7_MAX_IRQ_ID];
 
 //------------------------------------------------------------------------------
 //
 //    GPIO support
-// 
+//
 //    Argument 'pinnum' value is:
-//         
+//
 //         0..31  for bank0
 //        32..53  for bank1
 //        64..95  for bank2
 //        96..128 for bank3
-// 
+//
 INLINE void gpio_int_en(const uint32_t pinnum)
 {
     const uint32_t  REG_ADDR = GPIO_INT_EN_0_REG + pinnum/32*0x40;
@@ -332,13 +343,13 @@ INLINE void gpio_int_en(const uint32_t pinnum)
     wpa(REG_ADDR, BIT_MASK);
 }
 //------------------------------------------------------------------------------
-enum TGpioIntPol : uint32_t
+enum GpioIntPol : uint32_t
 {
     GPIO_INT_POL_LOW_FALL  = 0,
     GPIO_INT_POL_HIGH_RISE = 1
 };
 
-INLINE void gpio_int_pol(const uint32_t pinnum, const TGpioIntPol)
+INLINE void gpio_int_pol(const uint32_t pinnum, const GpioIntPol)
 {
     const uint32_t  REG_ADDR = GPIO_INT_POLARITY_0_REG + pinnum/32*0x40;
     const uint32_t  BIT_MASK = 0x1ul << pinnum%32;
@@ -347,7 +358,7 @@ INLINE void gpio_int_pol(const uint32_t pinnum, const TGpioIntPol)
 }
 //------------------------------------------------------------------------------
 //
-// 
+//
 INLINE void gpio_clr_int_sts(const uint32_t pinnum)
 {
     const uint32_t  REG_ADDR = GPIO_INT_STAT_0_REG + pinnum/32*0x40;
