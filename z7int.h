@@ -322,6 +322,7 @@ typedef void (*isr_ptr_t)();
 
 void ps7_register_isr(isr_ptr_t ptr, uint32_t id);
 
+extern isr_ptr_t ps7_handlers[PS7_MAX_IRQ_ID];
 
 //------------------------------------------------------------------------------
 //
