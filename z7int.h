@@ -145,13 +145,15 @@ using status_reg_t = uint32_t;
 INLINE status_reg_t get_interrupt_state()
 {
     status_reg_t sr;
-    __asm__ __volatile__ ("mrs %0, cpsr\n" : "=r"(sr) );
+    __asm__ __volatile__ ("    mrs %0, cpsr\n" : "=r"(sr) );
     return sr;
 }
 //------------------------------------------------------------------------------
 INLINE void set_interrupt_state(status_reg_t sr)
 {
-    __asm__ __volatile__ ( " msr cpsr_c, %0 \n" : : "r"(sr) );
+    __asm__ __volatile__ ("    msr cpsr_c, %0 \n" : : "r"(sr) );
+    __asm__ __volatile__ ("    dsb\n");
+    __asm__ __volatile__ ("    isb\n");
 }
 //------------------------------------------------------------------------------
 class CritSect
